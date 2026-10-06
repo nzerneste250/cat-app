@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { usePrediction } from '../context/PredictionContext';
 import { t } from '../i18n/translations';
@@ -29,8 +30,9 @@ function PredictionStack() {
 
 function MainTabs() {
   const { language } = usePrediction();
+  const { height } = useWindowDimensions();
   const icons: Record<keyof BottomTabParamList, keyof typeof Ionicons.glyphMap> = { Home: 'home-outline', Prediction: 'analytics-outline', Saved: 'bookmark-outline' };
-  return <Tabs.Navigator screenOptions={({ route }) => ({ headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.secondaryText, tabBarLabelStyle: { fontSize: 11, fontWeight: '700' }, tabBarStyle: { height: 64, paddingTop: 6, borderTopColor: colors.border, backgroundColor: colors.white }, tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? icons[route.name].replace('-outline', '') as keyof typeof Ionicons.glyphMap : icons[route.name]} size={22} color={color} /> })}>
+  return <Tabs.Navigator screenOptions={({ route }) => ({ headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.secondaryText, tabBarLabelStyle: { fontSize: height < 500 ? 10 : 11, fontWeight: '700' }, tabBarStyle: { height: height < 500 ? 52 : 64, paddingTop: height < 500 ? 2 : 6, borderTopColor: colors.border, backgroundColor: colors.white }, tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? icons[route.name].replace('-outline', '') as keyof typeof Ionicons.glyphMap : icons[route.name]} size={height < 500 ? 19 : 22} color={color} /> })}>
     <Tabs.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t(language, 'home') }} />
     <Tabs.Screen name="Prediction" component={PredictionStack} options={{ tabBarLabel: t(language, 'prediction') }} />
     <Tabs.Screen name="Saved" component={SavedScreen} options={{ tabBarLabel: t(language, 'saved') }} />

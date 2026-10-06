@@ -452,3 +452,41 @@ npx expo-doctor        PASS — 21/21 checks passed
 npm test               PASS — 19 passed, 0 failed
 git diff --check       PASS
 ```
+
+### Season/month flow and responsive layout update — October 6, 2026
+
+The Land & Season step was simplified so agricultural season and planting month
+are one connected flow. The app now uses `orientation: "default"` in `app.json`,
+allowing portrait and landscape layouts without changing the prediction
+navigation or EAS package configuration.
+
+Changes in this update:
+
+- Land & Season now presents land size, unit, agricultural season, agricultural
+  year, and valid planting months on one farmer-focused page.
+- Planting month options are shown only after a season is selected.
+- Season changes clear the previous planting month and its stored date metadata.
+- Month cards display the actual calendar year for Season A cross-year dates.
+- Continue is disabled until land size, unit, season, agricultural year, and
+  planting month are complete.
+- Land size, unit, season, year, and month edits are written to
+  `PredictionContext` while the farmer edits, preserving them through rotation
+  and navigation recreation.
+- The month grid adapts between two, three, and four columns using the available
+  window width; the bottom tab bar reduces height and icon size in landscape.
+- The duplicate month selector was removed from Farming Information because the
+  month now belongs directly to the season selection step.
+- Land & Season uses vertical scrolling only for content that exceeds the
+  viewport and avoids horizontal overflow.
+
+Validation for this update:
+
+```text
+npx tsc --noEmit       PASS
+npx expo-doctor        PASS — 21/21 checks passed
+npm test               PASS — 19 passed, 0 failed
+git diff --check       PASS
+```
+
+Manual rotation and narrow-device verification should still be performed in Expo
+Go or on a physical Android device before release.
