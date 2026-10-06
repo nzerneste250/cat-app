@@ -413,3 +413,42 @@ switch to port 8082, which is unavailable in the non-interactive command context
 
 The focused feature commit was created successfully. Unrelated pre-existing
 working-tree changes remain outside that commit and were not included in it.
+
+### Rwanda season and planting-date update — October 6, 2026
+
+The prediction flow now uses centralized Rwanda agricultural season periods based
+on the NISR Seasonal Agricultural Survey definitions. The implementation is in:
+
+- `src/data/seasons.ts` — Season A, B, and C month definitions and year offsets.
+- `src/utils/seasonDates.ts` — agricultural-year and calendar-year conversion.
+- `src/components/PlantingMonthSelector.tsx` — season-dependent month picker.
+- `tests/seasonDates.test.ts` — cross-year and invalid-season-month coverage.
+
+Season A is explicitly represented as September–December of
+`agriculturalYear - 1`, followed by January–February of `agriculturalYear`.
+Seasons B and C use the agricultural year for all their months. Prediction input
+now preserves `agriculturalYear`, `plantingMonth`, `plantingCalendarYear`, and
+`plantingDateLabel` so Result and Saved screens show the actual planting date.
+
+The Land & Season screen now offers descriptive selectable cards:
+
+```text
+Season A — September – February
+Season B — March – June
+Season C — July – September
+```
+
+Changing season clears an existing month selection. The month modal then shows
+only valid months for the selected season and agricultural year, with the actual
+calendar year displayed on each option (for example, `Oct 2026` for Season A
+2027). Inline validation requires season, agricultural year, and a valid planting
+month before prediction.
+
+Validation for this update:
+
+```text
+npx tsc --noEmit       PASS
+npx expo-doctor        PASS — 21/21 checks passed
+npm test               PASS — 19 passed, 0 failed
+git diff --check       PASS
+```
