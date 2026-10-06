@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "CAT App",
+    "slug": "cat-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "android": {
+      "package": "com.nzerneste.catapp",
+      "versionCode": 1
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6e67035c-1c07-4cf3-93de-3be4d8a06118"
+      }
+    }
+  }
+}
