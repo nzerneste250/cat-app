@@ -1,7 +1,8 @@
 import React from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
 import { PredictionProvider } from './src/context/PredictionContext';
 
 export default function App() {
-  return <PredictionProvider><AppNavigator /></PredictionProvider>;
+  return <SafeAreaProvider><PredictionProvider><AppNavigator /></PredictionProvider></SafeAreaProvider>;
 }
