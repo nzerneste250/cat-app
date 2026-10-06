@@ -56,6 +56,29 @@ npm run check               # typecheck + tests: 15 skipped, correct
 npx expo start              # scan the QR code with Expo Go
 ```
 
+### Use Expo Go from a different network
+
+If the phone and computer are not connected to the same Wi-Fi network, start
+Expo with its tunnel mode:
+
+```bash
+npm run start:tunnel
+```
+
+Scan the QR code with Expo Go. Tunnel mode allows the phone to download the Expo
+bundle from the computer, but it does **not** make a local Python API reachable
+from the internet.
+
+The Harvest Predictor mock flow works without an API. If the CAT API is needed
+while the phone and computer are on different networks, set a reachable HTTPS
+endpoint in `.env.local`:
+
+```text
+EXPO_PUBLIC_API_URL=https://your-public-api.example.com
+```
+
+Restart Expo after changing `.env.local`. Never use `localhost` in a phone build.
+
 ## Work cycle
 
 ```bash
@@ -73,8 +96,9 @@ On GitHub: **Compare & pull request** → template → a teammate as **Reviewer*
 ## Connect to the group's Python API
 
 1. Member 4 (AI repo): `uvicorn milkcheck.api:app --host 0.0.0.0 --app-dir src`
-2. Laptop IP (Windows `ipconfig`, Linux `hostname -I`, macOS `ipconfig getifaddr en0`) into `src/config.ts`.
-3. Phone and laptop on the same Wi-Fi, or both on one phone's hotspot. Test `http://<IP>:8000/health` in the phone's browser first.
+2. For the same Wi-Fi/hotspot, set `EXPO_PUBLIC_API_URL=http://<laptop-ip>:8000` in `.env.local`.
+3. For different networks, deploy or expose the API through a secure HTTPS endpoint and set that URL in `.env.local`.
+4. Test `<API_URL>/health` in the phone's browser before testing the app.
 
 ## How this repository is marked (SWE 3409, out of 100 per student)
 

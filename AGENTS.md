@@ -37,6 +37,10 @@ offline behavior.
   or `src/health.ts`; do not embed these rules in visual components.
 - Keep reusable UI in `src/components`, screen-level composition in `src/screens`,
   and shared data/types in their existing folders.
+- Keep prediction-input and saved-record guards in `src/utils/validation.ts`; do not
+  rely on TypeScript casts for data received from navigation context or storage.
+- Treat AsyncStorage as untrusted persistence: parse JSON defensively, skip invalid
+  records, normalize legacy crop labels, and serialize read-modify-write operations.
 - Prefer local styles with `StyleSheet.create`. Avoid introducing a styling
   library or large global stylesheet without a clear need.
 
@@ -137,6 +141,8 @@ Forms must be forgiving and explicit:
   input.
 - Use `keyboardType="numeric"` for numeric delivery fields.
 - Validate before saving; show the first actionable validation message.
+- Validate before every prediction navigation step and before calculating or
+  rendering a result. Incomplete drafts must show a bilingual recovery action.
 - Preserve user input after an error.
 - Trim and normalize farmer IDs before creating a delivery.
 - Clear fields only after a successful save.
@@ -151,6 +157,8 @@ For the CAT delivery form, retain the exact validation messages specified in
 - Use `FlatList` for delivery records and stable IDs in `keyExtractor`.
 - Show an intentional empty state: explain that there are no deliveries and what
   the user should do next.
+- Saved prediction screens must distinguish loading, empty, and storage-error
+  states. Delete actions require confirmation and must not open the card detail.
 - Display farmer ID, litres, risk word, and delivery status in a scannable row.
 - Use the words `Sent` and `Saved on phone`; never rely on a color dot alone.
 - Show totals above the list: count, litres, and high-risk count.
@@ -196,6 +204,9 @@ For the CAT delivery form, retain the exact validation messages specified in
   display `Not checked`.
 - A failed delivery submission must leave the record available locally and show
   `Saved on phone`.
+- Prediction results and saved predictions are local/offline prototype data. Save,
+  load, and delete failures must produce visible localized feedback rather than
+  silently changing the UI.
 - Do not log farmer data, network payloads, or credentials in production UI code.
 
 ## 7. Localization
@@ -229,11 +240,10 @@ milestones depend on them.
 Run these commands from the repository root after changes:
 
 ```bash
-npm run typecheck
-npm run test:logic
-npm run test:api
-npm run test:health
-npm run check
+npx tsc --noEmit
+npm test
+npx expo-doctor
+git diff --check
 npx expo start
 ```
 
@@ -325,7 +335,7 @@ The following checks passed on October 6, 2026:
 ```text
 npx tsc --noEmit       PASS
 npx expo-doctor        PASS — 21/21 checks passed
-npm test               PASS — 15 passed, 0 failed, 0 skipped
+npm test               PASS — 19 passed, 0 failed, 0 skipped
 ```
 
 The test suite includes:
@@ -333,6 +343,7 @@ The test suite includes:
 - 6 M1 logic tests.
 - 6 M4 API tests.
 - 3 M5 health tests.
+- 4 season/month mapping tests.
 
 No `TODO M1` through `TODO M5` implementation markers remain in `src/`.
 
@@ -347,6 +358,27 @@ No `TODO M1` through `TODO M5` implementation markers remain in `src/`.
 - No authentication, GPS, maps, payments, external API calls, or cloud database
   were added.
 
+### Frontend hardening completed
+
+Commit `8992b41` (`Polish farmer app frontend and offline experience`) added the
+following protections without changing deterministic mock prediction behavior:
+
+- Centralized province, district, crop, season, month, year, land-size, unit, and
+  farming-answer validation in `src/utils/validation.ts`.
+- Explicit location validation before advancing from the first prediction step.
+- Safe invalid-draft recovery instead of force-casting draft data on the result
+  screen.
+- Defensive AsyncStorage parsing, invalid-record skipping, legacy crop-label
+  normalization, duplicate replacement, and serialized writes.
+- Bilingual save/load/delete failure messages and saved-screen loading states.
+- Delete confirmation and isolated delete controls on saved prediction cards.
+- Responsive crop cards using flexible sizing for narrow screens.
+- Root `SafeAreaProvider` and accessible labels/roles on saved prediction actions.
+
+The commit intentionally changed only the eight files required for this hardening
+pass. Existing unrelated working-tree changes must not be folded into follow-up
+commits without review.
+
 ### Remaining work
 
 Before release or demonstration as a production application:
@@ -356,8 +388,68 @@ Before release or demonstration as a production application:
 2. Verify keyboard behavior on all form screens.
 3. Replace the mock prediction service with the trained model/API.
 4. Connect the result flow to the real API when the backend contract is ready.
-5. Review the existing unrelated working-tree changes before committing.
-6. Create a focused commit only after the interactive phone review is complete.
+5. Add dedicated unit coverage for `src/utils/validation.ts` and storage parsing if
+   the persistence format changes again.
+6. Review the existing unrelated working-tree changes before committing them.
+7. Push to `main` only after repository access is confirmed and all checks pass.
+
+## 12. Localization and encoding audit — October 6, 2026
+
+The farmer-facing application was audited for Kinyarwanda wording, dynamic values,
+responsive text, and UTF-8 encoding. The implementation preserves the existing
+navigation, prediction calculations, AsyncStorage behavior, Expo SDK 57 setup, and
+English support.
+
+### Localization rules now in use
+
+- Keep all farmer-facing copy in `src/i18n/translations.ts` and use the shared
+  translation helpers from screens and components.
+- Kinyarwanda (`rw`) remains the default language; English (`en`) remains supported.
+- Keep stable crop IDs in application/model data:
+  `maize`, `irish_potatoes`, `beans`, `rice`, `banana`, and `cassava`.
+- Localize crop labels, province labels, season labels, month labels, result details,
+  saved prediction cards, and native share text at display time.
+- Keep province and district data values stable. Only province labels are localized;
+  district names such as Musanze, Huye, and Rubavu remain proper names.
+- Keep season values as `A`, `B`, and `C`; display `Igihembwe A/B/C` in RW mode.
+- Use the season-aware planting month selector with localized month names and actual
+  calendar years.
+- Preserve compatibility with older saved predictions that used English crop names.
+
+### Corrected Kinyarwanda content
+
+The audit corrected apostrophes and wording such as `y’ubutaka`, `cy’ubuhinzi`, and
+`w’ubuhinzi`, and applied the approved farmer-facing labels for:
+
+- Home, prediction, saved predictions, land and season, farming information, and
+  harvest results.
+- Crops: Ibigori, Ibirayi, Ibishyimbo, Umuceri, Ibitoki, and Imyumbati.
+- Provinces: Umujyi wa Kigali, Intara y’Amajyaruguru, Intara y’Amajyepfo,
+  Intara y’Iburasirazuba, and Intara y’Iburengerazuba.
+- Months: Mutarama, Gashyantare, Werurwe, Mata, Gicurasi, Kamena, Nyakanga,
+  Kanama, Nzeri, Ukwakira, Ugushyingo, and Ukuboza.
+- Result labels, disclaimers, validation messages, empty states, buttons, tab labels,
+  saved details, and share text.
+
+### Localization validation
+
+The following checks passed on October 6, 2026:
+
+```text
+npx tsc --noEmit  PASS
+npx expo-doctor   PASS — 21/21 checks passed
+npm test          PASS — 19 passed, 0 failed
+git diff --check  PASS
+```
+
+A full source-tree scan excluding generated/dependency directories found zero
+occurrences of Unicode replacement characters or known mojibake byte sequences.
+
+The reviewed farmer-facing surfaces were Home, Location, Crop, Land & Season,
+Farming Information, Prediction Result, Saved Predictions, saved details, empty
+states, validation messages, bottom navigation, confirmation messages, and share
+text. Narrow-screen styles continue to allow wrapped labels and multi-line cards;
+an actual Android/Expo Go review remains recommended before release.
 
 ### Farmer UI and navigation update — October 6, 2026
 

@@ -1,30 +1,7 @@
-/**
- * M5 · MEMBER 5 · Banner: "Server OK" or "Offline"  (with src/health.ts)
- *
- * Owner (your GitHub username): @
- *
- * Build it like this:
- *   const [status, setStatus] = useState<'checking' | 'ok' | 'offline'>('checking');
- *   async function check() { setStatus('checking'); setStatus(await checkHealth(apiUrl)); }
- *   useEffect(() => { check(); }, []);
- *   Return a <View> whose background colour depends on status, with a <Text>:
- *     checking -> "Checking server..."     ok -> "Server OK"
- *     offline  -> "Offline: deliveries stay on this phone"
- *   and a <Button title="Check again" onPress={check} />.
- *   Show the status in words, not colour alone (some people cannot tell colours apart).
- *
- * Check on the phone: API running -> "Server OK". Stop the API, press
- * "Check again" -> the offline message.
- */
-import { Text, View } from 'react-native';
-
-type Props = { apiUrl: string };
-
-export default function StatusBanner({ apiUrl }: Props) {
-  // TODO M5: replace this placeholder (and delete this line) with the real banner.
-  return (
-    <View>
-      <Text>TODO M5: server status for {apiUrl}</Text>
-    </View>
-  );
-}
+import React, { useCallback, useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { colors } from '../constants/colors';
+import { checkHealth } from '../health';
+type Props = { apiUrl: string }; type Status='checking'|'ok'|'offline';
+export default function StatusBanner({apiUrl}:Props){const [status,setStatus]=useState<Status>('checking');const check=useCallback(async()=>{setStatus('checking');setStatus(await checkHealth(apiUrl));},[apiUrl]);useEffect(()=>{void check();},[check]);const message=status==='checking'?'Checking server...':status==='ok'?'Server OK':'Offline: deliveries stay on this phone';return <View style={[s.banner,status==='offline'?s.offline:s.online]}><Text style={s.message}>{message}</Text><Pressable onPress={()=>void check()} style={s.button}><Text style={s.buttonText}>Check again</Text></Pressable></View>;}
+const s=StyleSheet.create({banner:{borderRadius:12,padding:12,flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:10},online:{backgroundColor:colors.lightGreen},offline:{backgroundColor:colors.warning},message:{flex:1,fontSize:13,fontWeight:'700',color:colors.text},button:{paddingVertical:8,paddingHorizontal:10,borderRadius:8,backgroundColor:colors.white},buttonText:{fontSize:12,fontWeight:'800',color:colors.primary}});

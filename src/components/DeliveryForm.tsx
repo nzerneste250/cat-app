@@ -1,46 +1,9 @@
-/**
- * M2 · MEMBER 3 · The form where the collector records a can of milk
- *
- * Owner (your GitHub username): @
- * Your AI task in the swe3513-cat1 repository: A3 (model.py)
- *
- * WHAT MEMBER 3 DOES HERE
- * Four inputs, one error message, one Save button. The form never saves bad
- * input: it asks checkDelivery() (Member 4, src/logic.ts) and shows the
- * message it returns. Until Member 4 merges, pressing Save shows an error
- * "M1 ... is not written yet"; that is expected, keep building.
- *
- * Build it like this:
- *   const [farmerId, setFarmerId] = useState('');   // same for litres, tempC, hours ('' each)
- *   const [error, setError] = useState('');
- *
- *   function save() {
- *     const problem = checkDelivery(farmerId, litres, tempC, hours);
- *     if (problem) { setError(problem); return; }
- *     setError('');
- *     onSave({ farmerId: farmerId.trim().toUpperCase(), litres: Number(litres),
- *              tempC: Number(tempC), hours: Number(hours) });
- *     // then empty the four inputs
- *   }
- *
- *   Return a <View> with four <TextInput>s. Each one has: value, onChangeText,
- *   a placeholder and an accessibilityLabel; the three number inputs use
- *   keyboardType="numeric". Show {error} in a red <Text> when it is not empty,
- *   and add <Button title="Save delivery" onPress={save} />.
- *
- * Done means: no "TODO M2" left, npm run typecheck has no errors, and on the
- * phone a bad farmer code shows "Enter a farmer code like FRM-0012".
- */
-import { Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { colors } from '../constants/colors';
+import { checkDelivery } from '../logic';
 import type { NewDelivery } from '../logic';
-
-type Props = { onSave: (d: NewDelivery) => void };
-
-export default function DeliveryForm({ onSave }: Props) {
-  // TODO M2: replace this placeholder (and delete this line) with the real form.
-  return (
-    <View>
-      <Text>TODO M2: delivery form</Text>
-    </View>
-  );
-}
+type Props = { onSave: (delivery: NewDelivery) => void };
+export default function DeliveryForm({ onSave }: Props) { const [farmerId,setFarmerId]=useState(''); const [litres,setLitres]=useState(''); const [tempC,setTempC]=useState(''); const [hours,setHours]=useState(''); const [error,setError]=useState(''); const save=()=>{const problem=checkDelivery(farmerId,litres,tempC,hours);if(problem){setError(problem);return;}setError('');onSave({farmerId:farmerId.trim().toUpperCase(),litres:Number(litres),tempC:Number(tempC),hours:Number(hours)});setFarmerId('');setLitres('');setTempC('');setHours('');};return <View style={s.container}><Field label="Farmer code" value={farmerId} setValue={setFarmerId} placeholder="FRM-0012"/><Field label="Litres" value={litres} setValue={setLitres} placeholder="18.5" numeric/><Field label="Arrival temperature (°C)" value={tempC} setValue={setTempC} placeholder="7" numeric/><Field label="Hours since milking" value={hours} setValue={setHours} placeholder="1.5" numeric/>{error?<Text style={s.error}>{error}</Text>:null}<Pressable onPress={save} style={s.button}><Text style={s.buttonText}>Save delivery</Text></Pressable></View>;}
+function Field({label,value,setValue,placeholder,numeric=false}:{label:string;value:string;setValue:(value:string)=>void;placeholder:string;numeric?:boolean}){return <><Text style={s.label}>{label}</Text><TextInput value={value} onChangeText={setValue} placeholder={placeholder} keyboardType={numeric?'numeric':'default'} autoCapitalize={numeric?'none':'characters'} style={s.input} accessibilityLabel={label}/></>;}
+const s=StyleSheet.create({container:{backgroundColor:colors.white,borderWidth:1,borderColor:colors.border,borderRadius:16,padding:16},label:{fontSize:14,fontWeight:'700',color:colors.text,marginTop:10,marginBottom:6},input:{height:48,borderWidth:1,borderColor:colors.border,borderRadius:10,paddingHorizontal:12,color:colors.text},error:{color:colors.error,fontSize:13,marginTop:12},button:{minHeight:50,borderRadius:12,backgroundColor:colors.primary,alignItems:'center',justifyContent:'center',marginTop:16},buttonText:{color:colors.white,fontWeight:'800'}});

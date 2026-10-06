@@ -32,8 +32,7 @@ export type Delivery = NewDelivery & {
 /** true if text is exactly "FRM-" followed by 4 digits, e.g. "FRM-0012".
  *  Tip: /^FRM-\d{4}$/.test(text) */
 export function isValidFarmerId(text: string): boolean {
-  // TODO M1: write this, then delete this TODO line.
-  throw new Error('M1 isValidFarmerId is not written yet');
+  return /^FRM-\d{4}$/.test(text);
 }
 
 /** Return '' when the input is fine, otherwise the FIRST problem, with exactly these messages:
@@ -44,20 +43,32 @@ export function isValidFarmerId(text: string): boolean {
  *  Watch out: Number('') is 0, so check for empty text first.
  *  Tip: const l = Number(litres); if (litres.trim() === '' || !(l > 0 && l <= 60)) return '...'; */
 export function checkDelivery(farmerId: string, litres: string, tempC: string, hours: string): string {
-  // TODO M1: write this, then delete this TODO line.
-  throw new Error('M1 checkDelivery is not written yet');
+  const id = farmerId.trim().toUpperCase();
+  if (!isValidFarmerId(id)) return 'Enter a farmer code like FRM-0012';
+  const l = Number(litres);
+  if (litres.trim() === '' || !(l > 0 && l <= 60)) return 'Litres must be more than 0 and at most 60';
+  const temperature = Number(tempC);
+  if (tempC.trim() === '' || !(temperature >= 0 && temperature <= 45)) return 'Temperature must be 0 to 45 °C';
+  const elapsed = Number(hours);
+  if (hours.trim() === '' || !(elapsed >= 0 && elapsed <= 24)) return 'Hours since milking must be 0 to 24';
+  return '';
 }
 
 /** null -> 'Not checked'; below 0.3 -> 'Low'; below 0.6 -> 'Medium'; otherwise 'High'.
  *  These are the same limits as risk_label() in the Python API. */
 export function riskLabel(risk: number | null): string {
-  // TODO M1: write this, then delete this TODO line.
-  throw new Error('M1 riskLabel is not written yet');
+  if (risk === null) return 'Not checked';
+  if (risk < 0.3) return 'Low';
+  if (risk < 0.6) return 'Medium';
+  return 'High';
 }
 
 /** count = number of deliveries; litres = their sum rounded to 1 decimal
  *  (Math.round(x * 10) / 10); highRisk = deliveries whose risk is 0.6 or more (null does not count). */
 export function totals(deliveries: Delivery[]): { count: number; litres: number; highRisk: number } {
-  // TODO M1: write this, then delete this TODO line.
-  throw new Error('M1 totals is not written yet');
+  return {
+    count: deliveries.length,
+    litres: Math.round(deliveries.reduce((sum, delivery) => sum + delivery.litres, 0) * 10) / 10,
+    highRisk: deliveries.filter((delivery) => delivery.risk !== null && delivery.risk >= 0.6).length,
+  };
 }
